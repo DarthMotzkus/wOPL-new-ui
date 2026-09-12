@@ -59,8 +59,8 @@ patches being applied at build time, it is a leftover from this retired pipeline
 
 - **Every push and PR** builds in the pinned `ghcr.io/ps2homebrew/ps2homebrew` toolchain
   image and keeps the result as a workflow artifact: `wOPL-new-ui-<id>.ELF`, a plain
-  `WOPNPS2LD.ELF` for setups configured to boot that name, the packaged `.ZIP` and the
-  language pack. `<id>` is the tag on a tagged build, the short commit otherwise.
+  `WOPNPS2LD.ELF` for setups configured to boot that name, and the packaged `.ZIP`.
+  `<id>` is the tag on a tagged build, the short commit otherwise.
 - **Pushing a `v*` tag** additionally publishes a GitHub Release with those files.
 
 Nothing else creates a release. Upstream's CI cut a fresh prerelease and tag on every
@@ -70,9 +70,26 @@ The release body is `.ci/release-notes.md`, written by hand before tagging, plus
 provenance line the workflow appends. Rewrite that file as part of preparing a release —
 whatever it says when the tag is pushed is what gets published.
 
-The language pack step is `continue-on-error`: it comes from a separate upstream
-repository, and a bad day on their side should not fail a build of this one. When it does
-not build, the step goes yellow and the pack is simply absent from the release.
+## Languages
+
+This fork ships **English only** and publishes no language pack.
+
+The loader's own English text is not downloaded from anywhere: `lng_tmpl/_base.yml` lives
+in this repository, and `lang_compiler.py` turns it into `src/lang_internal.c` and
+`include/lang_autogen.h`, which are compiled into the ELF. Those two files are generated,
+not tracked.
+
+What the upstream translations repository
+([`Double-Unofficial-Open-PS2-Loader-lang`](https://github.com/ps2homebrew/Double-Unofficial-Open-PS2-Loader-lang))
+provides is the *translated* `.yml` files that become the loose `lng/lang_*.lng` files a
+user drops next to the ELF. `download_lng.sh` shallow-clones it into `lng_src/`, which is
+gitignored.
+
+That clone still happens during a build, because the stock `Makefile` lists `download_lng`
+as a prerequisite of both `all` and `release`. It costs a clone and produces ~30 `.lng`
+files that this fork does not publish. Cutting it would mean patching the `release` and
+`languages` targets — a divergence in a file upstream edits often — so for now the clone is
+tolerated and its output simply ignored.
 
 The workflows upstream keeps but this fork does not: the 16-way build matrix
 (`EXTRACT_FEATURES`/`GSM`/`CHEAT`/`PADEMU` combinations) and the debug matrix, which exist

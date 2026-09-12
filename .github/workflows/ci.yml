@@ -29,7 +29,7 @@ jobs:
           apk add --no-cache make git python3 gcc g++ libtool automake bison flex texinfo gawk wget curl zip
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # make woplversion derives the version from the git history, so the clone
       # has to be complete and the container has to trust the mounted workspace.
@@ -78,25 +78,13 @@ jobs:
           cp DETAILED_CHANGELOG out/ 2>/dev/null || true
           ls -la out
 
-      # The language pack comes from a separate upstream repository, so a bad day
-      # on their side must not fail a build of this one. It is attached when it
-      # builds and quietly skipped when it does not -- the step goes yellow, not red.
-      - name: Build language pack
-        continue-on-error: true
-        run: |
-          set -eu
-          make --trace download_lng languages
-          sh ./lng_pack.sh
-          for z in WOPNPS2LD-LANGS-*.zip; do
-            [ -e "$z" ] || continue
-            cp "$z" "out/wOPL-new-ui-LANGS-${BUILD_ID}.zip"
-            break
-          done
-
+      # No language pack: this fork ships English only. The loader's own English
+      # text is generated from lng_tmpl/_base.yml, which lives in this repository,
+      # so nothing here depends on the upstream translations repo for the UI.
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: wOPL-new-ui-${{ env.BUILD_ID }}
+          name: wOPL-new-ui
           path: out/*
           if-no-files-found: error
 
@@ -106,13 +94,12 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
-          pattern: wOPL-new-ui-*
-          merge-multiple: true
+          name: wOPL-new-ui
           path: out
 
       # The body is .ci/release-notes.md, written by hand per release, plus one
@@ -137,14 +124,13 @@ jobs:
           } >> release-body.md
           echo "--- release body, last lines:"; tail -n 5 release-body.md
 
-      # The language pack is allowed to be missing (its build step is
-      # continue-on-error), so unmatched files cannot be fatal for the upload --
-      # which means the loader itself has to be checked here instead, or a
-      # release could be published with nothing in it.
+      # The loader is the one asset a release cannot go out without, so it is
+      # checked explicitly rather than left to the upload step's globs.
       - name: Check the release actually has the loader
         run: |
           set -eu
           test -s out/WOPNPS2LD.ELF || { echo "::error::WOPNPS2LD.ELF missing from the build artifacts"; exit 1; }
+          ls out/wOPL-new-ui-*.ZIP >/dev/null 2>&1 || echo "::warning::no packaged .ZIP in the artifacts; releasing the ELF alone"
           ls -la out
 
       - name: Release
@@ -156,4 +142,3 @@ jobs:
             out/WOPNPS2LD.ELF
             out/wOPL-new-ui-*.ELF
             out/wOPL-new-ui-*.ZIP
-            out/wOPL-new-ui-LANGS-*.zip
