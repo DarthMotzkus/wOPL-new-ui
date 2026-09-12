@@ -45,7 +45,7 @@ the files it touches and how to revert it.
 |---|---|
 | `src/`, `include/`, `misc/`, `modules/`, ... | Upstream wOPL source, with the customizations already applied |
 | `customs/` | Custom audio and gfx with their art working files, each customization as a standalone patch against upstream, and the golden theme reference |
-| `dist/` | Compiled ELFs, named after the upstream revision plus the build date |
+| `dist/` | Compiled ELFs, named after the revision plus the build date, and the running build log |
 | `docs/` | One page per customization, plus the build pipeline |
 
 `customs/` is reference material — the customizations themselves are already committed in

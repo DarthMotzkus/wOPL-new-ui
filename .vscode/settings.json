@@ -1,0 +1,7 @@
+{
+    "makefile.configureOnOpen": false,
+    "git.repositoryScanIgnoredFolders": [
+        "node_modules",
+        "lng_src"
+    ]
+}

@@ -125,11 +125,19 @@ to catch build breaks in configurations nobody here ships; `check-format.yml`, a
 clang-format lint; `OPLTestISO.yml`, which builds the test ISO under `labs/`; and the
 downloads-badge job, which is about their release counters.
 
-## Publishing a build from the desktop
+## Builds from the desktop
 
-`dist/` holds published ELFs, named `wOPL-new-ui-<short sha>-<YYYY-MM-DD>.ELF`. The
+`dist/` holds the ELFs built locally, named `wOPL-new-ui-<short sha>-<YYYY-MM-DD>.ELF`. The
 upstream `.gitignore` ignores `*.ELF` globally, so `dist/*.ELF` is explicitly un-ignored —
-keep that negation in place or published builds will silently stop being tracked.
+keep that negation in place or builds will silently stop being tracked.
+
+`dist/BUILD-LOG.pt-BR.md` is the running log of those builds: what changed in each one and
+what still needs testing on real hardware. It lived outside the repository until the tree
+became the fork, which made it the one artefact with no backup anywhere; it is versioned
+here now. It is written in Portuguese — see the note at the top of the file.
+
+Each tracked ELF is ~1.5 MB and stays in the history forever, so commit a build when it is
+worth keeping — a milestone, or one being handed to someone — rather than on every compile.
 
 ## Upstream
 
