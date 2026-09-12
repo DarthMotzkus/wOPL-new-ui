@@ -45,6 +45,7 @@ const char *wOPLLastGet(void);
 int wOPLGlobalGameLoad(void);
 int wOPLGlobalGameSave(void);
 int wOPLPerGameLoad(const char *path, per_game_cfg_t *cfg);
+int wOPLPerGameLoadBuf(const void *buf, int size, per_game_cfg_t *cfg);
 int wOPLPerGameSave(const char *path, const per_game_cfg_t *cfg);
 
 int wOPLGameInfoLoad(const char *path, game_info_t *gi);

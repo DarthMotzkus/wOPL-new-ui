@@ -1261,7 +1261,21 @@ void sbPopulateConfig(base_game_info_t *game, const char *prefix, const char *se
     }
 
     if (pgcfg) {
-        wOPLPerGameLoad(cfg_path, pgcfg);
+        // Prefer a loose CFG/<id>.cfg; otherwise read it from the packed
+        // CFG/cfg.tar (new libconfig format), like ART/CHT tars do.
+        if (!wOPLPerGameLoad(cfg_path, pgcfg)) {
+            char tarname[40];
+            snprintf(tarname, sizeof(tarname), "%s.cfg", game->startup);
+
+            TarEntryBase *e = tarFind(TAR_KIND_CFG, tarname);
+            if (e) {
+                void *tbuf = tarGet(TAR_KIND_CFG, tarname);
+                if (tbuf) {
+                    wOPLPerGameLoadBuf(tbuf, e->rawSize, pgcfg);
+                    free(tbuf);
+                }
+            }
+        }
 
         // auto determine format/media/size if not set
         if (!pgcfg->format[0]) {

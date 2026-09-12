@@ -1155,7 +1155,15 @@ static void guiHandleOp(struct gui_update_t *item)
                 item->menu.menu->submenu = result;
                 item->menu.menu->current = result;
                 item->menu.menu->pagestart = result;
-            } else if (item->submenu.selected) { // remember last played game feature
+            }
+
+            // Not an "else if": when the last played game happens to be the
+            // first entry of the unsorted list, the branch above already
+            // consumed it and remindLast was never raised -- the following
+            // GUI_OP_SORT then reset current back to the top of the sorted
+            // list, so that one game was never remembered (and its auto start
+            // countdown never fired).
+            if (item->submenu.selected) { // remember last played game feature
                 item->menu.menu->current = result;
                 item->menu.menu->pagestart = result;
                 item->menu.menu->remindLast = 1;
@@ -1584,12 +1592,8 @@ void guiDrawBGPlasma()
 
 int guiDrawBGSettings(void)
 {
-    GSTEXTURE *bg = thmGetTexture(SETTINGS_BG);
-    if (bg) {
-        rmSetBackground(bg);
-        return 1;
-    }
-
+    // Return 0 so settings/dialog screens fall through to plasma — the
+    // SETTINGS_BG texture is still loaded for the games list overlay (theme).
     return 0;
 }
 

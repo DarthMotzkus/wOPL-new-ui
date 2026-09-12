@@ -66,7 +66,7 @@ global_game_cfg_t gGlobalGameCfg = {0};
 int gBDMFramesDelay = MENU_MIN_INACTIVE_FRAMES;
 int gETHFramesDelay = MENU_MIN_INACTIVE_FRAMES;
 int gHDDFramesDelay = MENU_MIN_INACTIVE_FRAMES;
-int gMMCEFramesDelay = MENU_MIN_INACTIVE_FRAMES;
+int gMMCEFramesDelay = 0; // wOPL: no cover-art pre-delay for fast MMCE devices (SD2PSX/MemCard PRO)
 int gAPPFramesDelay = MENU_MIN_INACTIVE_FRAMES;
 int gFAVFramesDelay = MENU_MIN_INACTIVE_FRAMES;
 
@@ -357,9 +357,44 @@ static void sanitize_pad_sensitivity(void)
         gYSensitivity = 0;
 }
 
+// wOPL: locate the memory-card slot for the config. sysCheckMC() naively
+// returns the first slot that has any card (preferring mc0), which sends the
+// config to the wrong card when the wOPL folder lives on mc1 but a plain card
+// sits in mc0. Mirror checkMC()/sbGetmcID() here (read-only, no side effects,
+// no init-order dependency): prefer the slot that already holds the wOPL
+// config folder, then fall back to the first slot with a card. Returns 0/1, or
+// -1 when no card is present (matches the `mc >= 0` / `mc & 1` callers).
+static int wopl_mc_slot(void)
+{
+    char dir[64];
+    DIR *d;
+
+    snprintf(dir, sizeof(dir), "mc0:%s/", WOPL_CONFIG_NAME);
+    if ((d = opendir(dir)) != NULL) {
+        closedir(d);
+        return 0;
+    }
+    snprintf(dir, sizeof(dir), "mc1:%s/", WOPL_CONFIG_NAME);
+    if ((d = opendir(dir)) != NULL) {
+        closedir(d);
+        return 1;
+    }
+
+    if ((d = opendir("mc0:/")) != NULL) {
+        closedir(d);
+        return 0;
+    }
+    if ((d = opendir("mc1:/")) != NULL) {
+        closedir(d);
+        return 1;
+    }
+
+    return -1;
+}
+
 static int pick_default_config_dir(void)
 {
-    int mc = sysCheckMC();
+    int mc = wopl_mc_slot();
 
     // like old tryAlternateDevice().. first launch no config prefers mc..
     if (mc >= 0) {
@@ -448,7 +483,7 @@ static int probe_config_path(const char *filename, char *dir_out, size_t dir_len
     char path[256];
 
     // 1. current/default location mc..
-    int mc = sysCheckMC();
+    int mc = wopl_mc_slot();
     if (mc >= 0) {
         snprintf(dir, sizeof(dir), "mc%d:%s/", mc & 1, WOPL_CONFIG_NAME);
         snprintf(path, sizeof(path), "%s%s", dir, filename);
@@ -1349,6 +1384,38 @@ int wOPLPerGameLoad(const char *path, per_game_cfg_t *cfg)
     return 0;
 }
 
+// wOPL: load a per-game config from an in-memory buffer (a CFG/cfg.tar entry).
+// Same as wOPLPerGameLoad but parses from memory. New (libconfig) format only.
+int wOPLPerGameLoadBuf(const void *buf, int size, per_game_cfg_t *cfg)
+{
+    init_per_game_cfg(cfg);
+
+    if (!buf || size <= 0)
+        return 0;
+
+    char *str = malloc(size + 1);
+    if (!str)
+        return 0;
+    memcpy(str, buf, size);
+    str[size] = '\0';
+
+    config_t lcfg;
+    config_init(&lcfg);
+    int ok = config_read_string(&lcfg, str);
+    if (ok) {
+        cfgValidateBegin("CFG/cfg.tar");
+        parse_per_game(&lcfg, cfg);
+        cfgValidateEnd();
+        LOG("CONFIG_PERGAME: loaded from CFG/cfg.tar\n");
+    } else {
+        log_config_error("CFG/cfg.tar", &lcfg);
+    }
+    config_destroy(&lcfg);
+    free(str);
+
+    return ok;
+}
+
 int wOPLPerGameSave(const char *path, const per_game_cfg_t *cfg)
 {
     config_t lcfg;
@@ -1686,7 +1753,7 @@ static int try_save_all_boot(int types)
 
 static int try_save_all_mc(int types)
 {
-    int mc = sysCheckMC();
+    int mc = wopl_mc_slot();
 
     if (mc < 0)
         return 0;
