@@ -1,0 +1,44 @@
+diff --git a/src/common.c b/src/common.c
+index ff13e4f..f76df9a 100644
+--- a/src/common.c
++++ b/src/common.c
+@@ -36,23 +36,23 @@ void reset(void)
+ 
+ void setDefaultColors(void)
+ {
+-    gDefaultBgColor[0] = 0xFF;
+-    gDefaultBgColor[1] = 0xFF;
+-    gDefaultBgColor[2] = 0xFF;
++    gDefaultBgColor[0] = 0x00;
++    gDefaultBgColor[1] = 0x00;
++    gDefaultBgColor[2] = 0x00;
+ 
+-    gDefaultTextColor[0] = 0x5C;
+-    gDefaultTextColor[1] = 0x5C;
+-    gDefaultTextColor[2] = 0x5C;
++    gDefaultTextColor[0] = 0xFF;
++    gDefaultTextColor[1] = 0xFF;
++    gDefaultTextColor[2] = 0xFF;
+ 
+-    gDefaultSelTextColor[0] = 0x2a;
+-    gDefaultSelTextColor[1] = 0x2a;
+-    gDefaultSelTextColor[2] = 0x2a;
++    gDefaultSelTextColor[0] = 0x00;
++    gDefaultSelTextColor[1] = 0x79;
++    gDefaultSelTextColor[2] = 0xF5;
+ 
+-    gDefaultUITextColor[0] = 0xFF;
+-    gDefaultUITextColor[1] = 0xFF;
+-    gDefaultUITextColor[2] = 0xFF;
++    gDefaultUITextColor[0] = 0xB0;
++    gDefaultUITextColor[1] = 0xB3;
++    gDefaultUITextColor[2] = 0x00;
+ 
+-    gDefaultPlasmaBlendColor[0] = 0xFF;
+-    gDefaultPlasmaBlendColor[1] = 0xFF;
+-    gDefaultPlasmaBlendColor[2] = 0xFF;
++    gDefaultPlasmaBlendColor[0] = 0x00;
++    gDefaultPlasmaBlendColor[1] = 0x00;
++    gDefaultPlasmaBlendColor[2] = 0x00;
+ }
+\ No newline at end of file

@@ -1,0 +1,107 @@
+diff --git a/misc/theme_list.cfg b/misc/theme_list.cfg
+index 22d4fb1..0e5ec75 100644
+--- a/misc/theme_list.cfg
++++ b/misc/theme_list.cfg
+@@ -1,32 +1,31 @@
+-plasma_blend_color = "#FFFFFF";
+-
+ main0: {
+     type = "Background";
+-    default = "settings_bg";
++    pattern = "BG";
+     aligned = 0;
+     scaled = 0;
+     width = "DIM_INF";
+     height = "DIM_INF";
+ };
+ main1: {
+-    type = "ItemsList";
+-    x = 40;
+-    y = 38;
+-    width = 400;
+-    height = 380;
++    type = "StaticImage";
++    default = "settings_bg";
++    aligned = 0;
++    scaled = 0;
++    width = "DIM_INF";
++    height = "DIM_INF";
+ };
+ main2: {
+-    type = "StaticImage";
+-    default = "lm_case_shadow";
+-    x = -106;
+-    y = -165;
+-    skip = 1;
++    type = "ItemsList";
++    x = 20;
++    y = 57;
++    width = 400;
++    height = 342;
+ };
+ main3: {
+     type = "ItemCover";
+     default = "cover";
+-    x = -106;
+-    y = -296;
++    x = -61;
++    y = -271;
+     overlay = "lm_case";
+     overlay_ulx = 0;
+     overlay_uly = 9;
+@@ -40,8 +39,8 @@ main3: {
+ appsMain3: {
+     type = "ItemCover";
+     default = "cover_app";
+-    x = -106;
+-    y = -224;
++    x = -61;
++    y = -199;
+     overlay = "lm_apps_case";
+     overlay_ulx = 0;
+     overlay_uly = 9;
+@@ -55,12 +54,12 @@ appsMain3: {
+ main4: {
+     type = "ItemIcon";
+     default = "disc";
+-    x = -240;
+-    y = -210;
+-    wsX = -205;
++    x = -245;
++    y = -195;
++    wsX = -210;
+     width = 128;
+     height = 128;
+-    reflection = 1;
++    reflection = 0;
+ };
+ appsMain4: {
+     type = "ItemIcon";
+@@ -71,8 +70,8 @@ main5: {
+     type = "MenuIcon";
+     width = 180;
+     height = 120;
+-    x = -1;
+-    y = 333;
++    x = -11;
++    y = 348;
+     aligned = 2;
+ };
+ main6: {
+@@ -96,6 +95,16 @@ main8: {
+     width = 32;
+     height = 32;
+ };
++main9: {
++    type = "ItemText";
++    x = -94;
++    y = -130;
++};
++appsMain9: {
++    type = "ItemText";
++    x = -94;
++    y = -130;
++};
+ info0: {
+     type = "Background";
+     pattern = "BG";

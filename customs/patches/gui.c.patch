@@ -1,0 +1,19 @@
+diff --git a/src/gui.c b/src/gui.c
+index b2db9c4..74d0cc1 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -1294,12 +1294,8 @@ void guiDrawBGPlasma()
+ 
+ int guiDrawBGSettings(void)
+ {
+-    GSTEXTURE *bg = thmGetTexture(SETTINGS_BG);
+-    if (bg) {
+-        rmSetBackground(bg);
+-        return 1;
+-    }
+-
++    // Return 0 so settings/dialog screens fall through to plasma — the
++    // SETTINGS_BG texture is still loaded for the games list overlay (theme).
+     return 0;
+ }
+ 
