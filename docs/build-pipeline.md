@@ -11,12 +11,40 @@ building is a plain compile of what is checked out:
 make clean release
 ```
 
-Toolchain: ps2dev v2.0.0, built here under WSL (Ubuntu 24.04). The output is
-`WOPNPS2LD.ELF` in the repository root; rename it to whatever you like and copy it to the
-PS2. Nothing is patched, overlaid, downloaded or re-applied at build time.
+Toolchain: ps2dev v2.0.0. The output is `WOPNPS2LD-<version>.ELF` plus a packaged `.ZIP` in
+the repository root; rename the ELF to whatever your PS2 setup boots. Nothing is patched,
+overlaid or re-applied at build time.
 
-The language files come from a separate repository and are fetched once by
-`download_lng.sh` into `lng_src/`, which the `Makefile` consumes and `.gitignore` excludes.
+## Building locally
+
+The toolchain lives at `/opt/toolchains/ps2dev` and has to be on the environment before
+`make` will find its compilers:
+
+```sh
+export PS2DEV=/opt/toolchains/ps2dev
+export PS2SDK="$PS2DEV/ps2sdk"
+export GSKIT="$PS2DEV/gsKit"
+export PATH="$PATH:$PS2DEV/bin:$PS2SDK/bin:$PS2DEV/ee/bin:$PS2DEV/iop/bin:$PS2DEV/dvp/bin"
+
+make clean release
+```
+
+Also needed: `make`, `git`, `zip`, and `python3` with PyYAML (`lang_compiler.py` uses it).
+
+Two things worth knowing:
+
+- The `release` target's last step builds a `.ZIP`. Without `zip` installed it exits 127
+  *after* the ELF is already complete, so gate any automation on the ELF existing rather
+  than on `make`'s exit status.
+- `make clean` wipes `obj/`, `asm/`, the per-module artefacts and the loose ELFs, but
+  leaves `modules/**/*.notiopmod.elf` behind; delete those too for a truly clean tree.
+
+Building from a native Linux path is considerably faster than from a Windows drive mounted
+under `/mnt`, where every file stat crosses the filesystem bridge.
+
+The language files come from a separate repository and are fetched by `download_lng.sh`
+into `lng_src/`, which the `Makefile` consumes and `.gitignore` excludes — see
+[Languages](#languages) below for what actually depends on it.
 
 ## History: the patch pipeline (retired)
 
