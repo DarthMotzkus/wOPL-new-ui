@@ -1,78 +1,66 @@
 # Build pipeline
 
-How the ELFs in `dist/` are produced, and how the customizations survive an upstream
-update.
+How the ELFs in `dist/` are produced.
 
-## Plain build
+## The short version
 
-Standard wOPL build, ps2dev v2.0.0 toolchain, run here under WSL (Ubuntu 24.04):
+The repository is the source of truth. Every customization is committed on `main`, so
+building is a plain compile of what is checked out:
 
 ```sh
 make clean release
 ```
 
-Output is `WOPNPS2LD.ELF` in the repository root. The source tree in this repository
-already has every customization applied, so this is all that is needed to reproduce a
-binary equivalent to the one in `dist/`.
+Toolchain: ps2dev v2.0.0, built here under WSL (Ubuntu 24.04). The output is
+`WOPNPS2LD.ELF` in the repository root; rename it to whatever you like and copy it to the
+PS2. Nothing is patched, overlaid, downloaded or re-applied at build time.
 
-## Automated pipeline
+The language files come from a separate repository and are fetched once by
+`download_lng.sh` into `lng_src/`, which the `Makefile` consumes and `.gitignore` excludes.
 
-The builds in `dist/` come from a scripted pipeline that keeps the customizations separate
-from the upstream source. The customizations are **not** stored as commits on top of
-upstream; they are re-applied from scratch on every build.
+## History: the patch pipeline (retired)
 
-The inputs live in a directory outside the repository:
+Earlier builds of this fork worked the other way around. The tree was kept at plain
+upstream and the customizations lived **outside** the repository, as a folder of inputs:
+custom `.adp` and `.png` assets overlaid wholesale, and one `.patch` file per logical source
+or theme change. Every build reverted the touched paths to `HEAD`, verified that upstream
+still referenced each asset the same way, re-applied everything with `git apply --3way`,
+and only then compiled.
 
-```
-<build inputs>/
-  audio/*.adp       overlaid wholesale onto audio/
-  gfx/*.png         overlaid wholesale onto gfx/
-  patches/*.patch   applied with `git apply --3way`
-  util/             working files the artwork was drawn from (not consumed by the build)
-```
+That design existed to survive upstream updates: a patch that still applied meant an
+upstream change had not broken the customization, and one that failed pointed straight at
+the conflict.
 
-Steps:
+It was retired once this fork got its own repository. Keeping the customizations as commits
+is simpler, reviewable, and makes the tree reproducible on its own. The trade-off is that
+rebasing onto a newer upstream is now a real merge rather than a patch re-apply — which is
+the normal cost of maintaining a fork, and is a deliberate, manual step.
 
-1. **Revert.** Every path named in a patch header, and every overlay target, is reset to
-   `HEAD`, so the patches always apply to a clean upstream state.
-2. **Sync — opt-in only.** The pipeline never pulls from origin on its own. It builds the
-   checkout exactly as it stands unless a sync is explicitly requested. The fork stays
-   pinned to a known-good upstream revision, and moves forward on purpose.
-3. **Structure check.** Each custom `.adp` must still exist in `audio/` and still be
-   referenced by the `Makefile`; each custom `.png` must still be listed in `PNG_ASSETS`;
-   each patch must still apply. Any mismatch aborts the build *before* anything is
-   overlaid, leaving the tree at plain upstream so the breaking change can be inspected.
-4. **Apply.** Binaries are copied over, patches applied with `git apply --3way` — so
-   upstream improvements in untouched regions of a patched file survive.
-5. **Build, place, clean.** The ELF is archived under a name carrying the upstream short
-   SHA; the previous build is kept.
+Two artefacts of that era are still worth having, and live in `customs/`:
 
-### Why patches and not commits
+- `customs/patches/` — each customization as a standalone diff against upstream. Kept so a
+  single change can be reverted in isolation, or submitted upstream on its own:
+  [06 — Remember last played](changes/06-remember-last-played.md) went upstream exactly that
+  way. They are **not** applied by any build; the code they describe is already committed.
+- `customs/audio/`, `customs/gfx/`, `customs/util/` — the custom assets as standalone files
+  plus the working files they were drawn from. The assets themselves are already in `audio/`
+  and `gfx/`; these copies are the originals, kept together with their sources.
+- `customs/reference/` — golden `theme_list.cfg` / `theme_coverflow.cfg` and
+  `THEME_POSITIONS.md`, the authoritative record of the theme asset positions. If the
+  on-screen layout ever drifts, restore from these rather than re-deriving it. See
+  [07 — Theme layout](changes/07-theme-layout.md).
 
-Binary assets have no useful merge semantics, so they are overlaid wholesale. Source and
-theme changes are kept as one patch per logical change, which means each one can be
-reverted, rebased or submitted upstream on its own — [06](changes/06-remember-last-played.md)
-went upstream exactly that way.
+If you find a reference anywhere to an external customs folder, a structure check, or
+patches being applied at build time, it is a leftover from this retired pipeline.
 
-### Checking a patch still applies
+## Publishing a build
 
-`git apply --check --3way` reports success in cases where the real apply would not behave
-as expected, because the three-way fallback can resolve against blobs rather than the
-working tree. Verify with an actual apply on a clean tree, not with the dry run alone.
+`dist/` holds published ELFs, named `wOPL-new-ui-<short sha>-<YYYY-MM-DD>.ELF`. The
+upstream `.gitignore` ignores `*.ELF` globally, so `dist/*.ELF` is explicitly un-ignored —
+keep that negation in place or published builds will silently stop being tracked.
 
-### Apply order
+## Upstream
 
-Patches are applied in glob (alphabetical) order. When two patches touch the same file, the
-file names decide who goes first — `gui.c.patch` before `gui.c.remember-last.patch`. That
-ordering is deliberate: the second patch was generated against the current upstream tip and
-edits a region far above the first one, so it applies with no offset once the first is in.
-
-## `customs/` in this repository is a snapshot
-
-The pipeline reads its inputs from the external directory above, by absolute path. The copy
-committed under `customs/` is **never read by the build**. It exists so the inputs are
-backed up and reviewable alongside the code they produce.
-
-That means it can drift: edit a patch in the working directory, forget to refresh the copy,
-and the repository shows something the binary was not built from. When the inputs change,
-re-copy them in the same commit as the resulting source change.
+`origin` points at `ps2homebrew/wOPL` so the upstream history stays visible from here.
+Nothing pulls from it automatically: the fork stays pinned to a known-good revision and
+moves forward only when someone decides to merge.

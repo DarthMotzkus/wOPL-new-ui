@@ -50,11 +50,12 @@ recovered from it and are treated as the source of truth whenever the layout dri
 
 ## Note on drift
 
-Theme positions are the easiest thing in this fork to lose, because any refactor of the
-patches silently re-orders elements. The authoritative final-state `.cfg` files are kept
-outside this repository, in the local build tooling, together with a table of the canonical
-positions. If the on-screen layout ever looks wrong, restore from those rather than
-re-deriving from a running build.
+Theme positions are the easiest thing in this fork to lose, because any edit that re-orders
+theme elements silently shifts them. The authoritative final-state files live in
+`customs/reference/` — `theme_list.cfg`, `theme_coverflow.cfg` and `THEME_POSITIONS.md`
+with the canonical position table. They were recovered from a known-good earlier build. If
+the on-screen layout ever looks wrong, restore from those rather than re-deriving it from a
+running build, and update them whenever the positions are re-tuned on purpose.
 
 ## Upstreamable
 

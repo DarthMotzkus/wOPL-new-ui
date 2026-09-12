@@ -44,12 +44,12 @@ the files it touches and how to revert it.
 | Path | What it is |
 |---|---|
 | `src/`, `include/`, `misc/`, `modules/`, ... | Upstream wOPL source, with the customizations already applied |
-| `customs/` | Snapshot of the build inputs: custom audio, gfx, the standalone patches, and the art working files |
+| `customs/` | Custom audio and gfx with their art working files, each customization as a standalone patch against upstream, and the golden theme reference |
 | `dist/` | Compiled ELFs, named after the upstream revision plus the build date |
 | `docs/` | One page per customization, plus the build pipeline |
 
-`customs/` is reference material. The actual build reads those inputs from a directory
-outside the repository — see [`docs/build-pipeline.md`](docs/build-pipeline.md).
+`customs/` is reference material — the customizations themselves are already committed in
+the source tree. See [`docs/build-pipeline.md`](docs/build-pipeline.md).
 
 ## Building
 
@@ -60,8 +60,8 @@ make clean release
 ```
 
 The result is `WOPNPS2LD.ELF`. Copy it to your PS2 and launch it like any other homebrew
-ELF. The automated pipeline used to produce the files in `dist/` — patches, asset overlay,
-versioned output — is described in [`docs/build-pipeline.md`](docs/build-pipeline.md).
+ELF. There is nothing to patch or overlay first: everything this fork changes is already in
+the tree. Details in [`docs/build-pipeline.md`](docs/build-pipeline.md).
 
 ## Current baseline
 
