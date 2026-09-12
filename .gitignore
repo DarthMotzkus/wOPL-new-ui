@@ -30,6 +30,7 @@ DETAILED_CHANGELOG
 !.gitignore
 !.gitattributes
 !.github
+!.ci
 !.editorconfig
 !.clang-format
 !.clang-format-ignore

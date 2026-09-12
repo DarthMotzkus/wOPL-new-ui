@@ -1,0 +1,159 @@
+name: Build & Release
+
+# Every push builds and keeps the ELF as an artifact. Pushing a v* tag also
+# publishes a GitHub Release with those same files.
+#
+# Upstream's CI cut a brand new prerelease + tag on *every* push to the default
+# branch. That is deliberately not replicated here: releases happen when a tag
+# says so, and nothing else creates one.
+on:
+  push:
+    branches: ['**']
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write # needed to create Releases on tag pushes
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    # Pinned ps2homebrew toolchain image (ps2dev + ps2sdk + gsKit), same digest
+    # upstream builds with, so CI and the local WSL toolchain stay comparable.
+    container: ghcr.io/ps2homebrew/ps2homebrew@sha256:207523ad98f17fd406afa7dd0c6cfe10730627545cbe45247f0bd73c8a66c376
+    steps:
+      - name: Install required dependencies
+        run: |
+          apk update
+          apk add --no-cache make git python3 gcc g++ libtool automake bison flex texinfo gawk wget curl zip
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # make woplversion derives the version from the git history, so the clone
+      # has to be complete and the container has to trust the mounted workspace.
+      - name: Make the full history available
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git fetch --prune --unshallow || git fetch --prune --tags
+
+      # A tagged build is named after the tag; anything else is named after the
+      # commit, so a test build can always be traced back to what produced it.
+      - name: Work out the build identity
+        run: |
+          set -eu
+          if [ "${GITHUB_REF_TYPE:-branch}" = "tag" ]; then
+            BUILD_ID="$GITHUB_REF_NAME"
+          else
+            BUILD_ID="$(git rev-parse --short HEAD)"
+          fi
+          echo "BUILD_ID=$BUILD_ID" >> "$GITHUB_ENV"
+          echo "WOPL_VERSION=$(make -s woplversion | tr -d '\r' | tail -n1)" >> "$GITHUB_ENV"
+
+      - name: Build -> make clean release
+        run: make --trace clean release
+
+      - name: Create detailed changelog
+        run: sh ./make_changelog.sh
+
+      - name: Collect artifacts
+        run: |
+          set -eu
+          mkdir -p out
+          ELF="$(find . -maxdepth 1 -name 'WOPNPS2LD-*.ELF' | head -n 1)"
+          if [ -z "$ELF" ]; then
+            echo "::error::build produced no WOPNPS2LD-*.ELF"
+            exit 1
+          fi
+          # Two names for the same binary: one that says which build it is, and
+          # the plain one most PS2 setups are configured to boot.
+          cp "$ELF" "out/wOPL-new-ui-${BUILD_ID}.ELF"
+          cp "$ELF" out/WOPNPS2LD.ELF
+          for z in WOPNPS2LD-*.ZIP; do
+            [ -e "$z" ] || continue
+            cp "$z" "out/wOPL-new-ui-${BUILD_ID}.ZIP"
+            break
+          done
+          cp DETAILED_CHANGELOG out/ 2>/dev/null || true
+          ls -la out
+
+      # The language pack comes from a separate upstream repository, so a bad day
+      # on their side must not fail a build of this one. It is attached when it
+      # builds and quietly skipped when it does not -- the step goes yellow, not red.
+      - name: Build language pack
+        continue-on-error: true
+        run: |
+          set -eu
+          make --trace download_lng languages
+          sh ./lng_pack.sh
+          for z in WOPNPS2LD-LANGS-*.zip; do
+            [ -e "$z" ] || continue
+            cp "$z" "out/wOPL-new-ui-LANGS-${BUILD_ID}.zip"
+            break
+          done
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wOPL-new-ui-${{ env.BUILD_ID }}
+          path: out/*
+          if-no-files-found: error
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wOPL-new-ui-*
+          merge-multiple: true
+          path: out
+
+      # The body is .ci/release-notes.md, written by hand per release, plus one
+      # generated provenance line. Upstream generated its notes from the commit
+      # log, which buries what actually changed under routine commits -- so the
+      # notes are written, not derived.
+      - name: Release notes with build provenance
+        run: |
+          set -eu
+          NOTES=.ci/release-notes.md
+          if [ ! -f "$NOTES" ]; then
+            echo "::warning::.ci/release-notes.md is missing; publishing with the tag name only"
+            printf '## %s\n' "$GITHUB_REF_NAME" > release-body.md
+          else
+            cp "$NOTES" release-body.md
+          fi
+          {
+            printf '\n---\n\n'
+            printf '**Build:** commit [`%s`](%s/commit/%s), ' \
+              "$(git rev-parse --short HEAD)" "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" "$GITHUB_SHA"
+            printf 'built with the pinned ps2homebrew toolchain image `sha256:207523ad…`.\n'
+          } >> release-body.md
+          echo "--- release body, last lines:"; tail -n 5 release-body.md
+
+      # The language pack is allowed to be missing (its build step is
+      # continue-on-error), so unmatched files cannot be fatal for the upload --
+      # which means the loader itself has to be checked here instead, or a
+      # release could be published with nothing in it.
+      - name: Check the release actually has the loader
+        run: |
+          set -eu
+          test -s out/WOPNPS2LD.ELF || { echo "::error::WOPNPS2LD.ELF missing from the build artifacts"; exit 1; }
+          ls -la out
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: release-body.md
+          fail_on_unmatched_files: false
+          files: |
+            out/WOPNPS2LD.ELF
+            out/wOPL-new-ui-*.ELF
+            out/wOPL-new-ui-*.ZIP
+            out/wOPL-new-ui-LANGS-*.zip

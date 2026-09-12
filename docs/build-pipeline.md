@@ -53,7 +53,34 @@ Two artefacts of that era are still worth having, and live in `customs/`:
 If you find a reference anywhere to an external customs folder, a structure check, or
 patches being applied at build time, it is a leftover from this retired pipeline.
 
-## Publishing a build
+## CI
+
+`.github/workflows/ci.yml` — *Build & Release*:
+
+- **Every push and PR** builds in the pinned `ghcr.io/ps2homebrew/ps2homebrew` toolchain
+  image and keeps the result as a workflow artifact: `wOPL-new-ui-<id>.ELF`, a plain
+  `WOPNPS2LD.ELF` for setups configured to boot that name, the packaged `.ZIP` and the
+  language pack. `<id>` is the tag on a tagged build, the short commit otherwise.
+- **Pushing a `v*` tag** additionally publishes a GitHub Release with those files.
+
+Nothing else creates a release. Upstream's CI cut a fresh prerelease and tag on every
+single push; that is deliberately not replicated.
+
+The release body is `.ci/release-notes.md`, written by hand before tagging, plus a
+provenance line the workflow appends. Rewrite that file as part of preparing a release —
+whatever it says when the tag is pushed is what gets published.
+
+The language pack step is `continue-on-error`: it comes from a separate upstream
+repository, and a bad day on their side should not fail a build of this one. When it does
+not build, the step goes yellow and the pack is simply absent from the release.
+
+The workflows upstream keeps but this fork does not: the 16-way build matrix
+(`EXTRACT_FEATURES`/`GSM`/`CHEAT`/`PADEMU` combinations) and the debug matrix, which exist
+to catch build breaks in configurations nobody here ships; `check-format.yml`, a
+clang-format lint; `OPLTestISO.yml`, which builds the test ISO under `labs/`; and the
+downloads-badge job, which is about their release counters.
+
+## Publishing a build from the desktop
 
 `dist/` holds published ELFs, named `wOPL-new-ui-<short sha>-<YYYY-MM-DD>.ELF`. The
 upstream `.gitignore` ignores `*.ELF` globally, so `dist/*.ELF` is explicitly un-ignored —
