@@ -61,8 +61,9 @@ modules/network/usmb2
 build/
 # Full output of the last ./build.sh run.
 build.log
-# The reference copies below would otherwise be swallowed by the *.patch
-# and *.ELF rules above. They are tracked on purpose: customs/ is the
-# snapshot of the local build inputs, dist/ holds the released binaries.
+# Local builds. What a release ships is built by CI from the tag, so an ELF
+# here is for this machine only and never belongs in the history.
+dist/
+# customs/patches/ would be swallowed by the *.patch rule above. It is tracked
+# on purpose: each customization as a standalone diff against upstream.
 !customs/patches/*.patch
-!dist/*.ELF

@@ -89,4 +89,4 @@ git diff --quiet \
 printf '\n%s\n  version %s\n  %s bytes, built in %ds\n' \
     "$out" "$(make -s woplversion | tr -d '\r' | tail -n 1)" \
     "$(stat -c %s "$out")" "$((SECONDS - started))"
-echo "  dist/*.ELF is tracked: commit it only when the build is worth keeping, and add an entry to dist/BUILD-LOG.pt-BR.md"
+echo "  dist/ is local only and never committed; the log of builds worth keeping is docs/BUILD-LOG.pt-BR.md"

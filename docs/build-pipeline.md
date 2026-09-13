@@ -28,8 +28,8 @@ overlaid or re-applied at build time.
 A clean build takes a couple of minutes; the full output is kept in `build.log`
 (gitignored). The script refuses to start if the toolchain or a required tool is missing,
 warns when the tree is dirty — the short sha in the filename then does not fully describe
-the binary — and does not commit anything: `dist/*.ELF` is tracked, so keeping a build is
-a deliberate step.
+the binary — and commits nothing: `dist/` is ignored, so a local build never reaches the
+repository.
 
 By hand, it is the same two commands with the environment in place:
 
@@ -163,17 +163,24 @@ from.
 ## Builds from the desktop
 
 `dist/` holds the ELFs built locally, named `wOPL-new-ui-<short sha>-<YYYY-MM-DD>.ELF`,
-which is what `./build.sh` writes. The upstream `.gitignore` ignores `*.ELF` globally, so
-`dist/*.ELF` is explicitly un-ignored — keep that negation in place or builds will silently
-stop being tracked.
+which is what `./build.sh` writes. The whole directory is **gitignored**: it is a local
+workspace, not part of the repository. What a release ships is built by CI from the tag, so
+a binary here would only be a second, unverifiable copy of it — and at ~1.5 MB each, one
+that stays in the history forever.
 
-`dist/BUILD-LOG.pt-BR.md` is the running log of those builds: what changed in each one and
-what still needs testing on real hardware. It lived outside the repository until the tree
+The two ELFs that were tracked before this rule are still reachable in the history, under
+`dist/` at `2f790da^`.
+
+[`BUILD-LOG.pt-BR.md`](BUILD-LOG.pt-BR.md), here in `docs/`, is the running log of those
+builds: what changed in each one and what still needs testing on real hardware. It moved
+out of `dist/` when that directory stopped being tracked — the log is the one part of it
+worth keeping in the repository. It lived outside the repository until the tree
 became the fork, which made it the one artefact with no backup anywhere; it is versioned
 here now. It is written in Portuguese — see the note at the top of the file.
 
-Each tracked ELF is ~1.5 MB and stays in the history forever, so commit a build when it is
-worth keeping — a milestone, or one being handed to someone — rather than on every compile.
+Write an entry there for a build worth remembering — a milestone, or one handed to someone
+to test. The binary itself stays on the machine that built it; if someone else needs it,
+the release page is where it comes from.
 
 ## Upstream
 
