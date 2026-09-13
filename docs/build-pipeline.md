@@ -104,7 +104,12 @@ patches being applied at build time, it is a leftover from this retired pipeline
   image and keeps the result as a workflow artifact: `wOPL-new-ui-<id>.ELF`, a plain
   `WOPNPS2LD.ELF` for setups configured to boot that name, and the packaged `.ZIP`.
   `<id>` is the tag on a tagged build, the short commit otherwise.
-- **Pushing a `v*` tag** additionally publishes a GitHub Release with those files.
+- **Pushing a `v*` tag** additionally publishes a GitHub Release carrying exactly one
+  file, `OPL.ELF` — the same loader, under the name the PS2 setups this fork is built for
+  boot. The longer names stay on the workflow artifact, where traceability is what matters;
+  a release page listing three names for one binary only asks the reader which to pick.
+  Re-tagging a version drops whatever an earlier run of that tag had attached, because the
+  upload step adds and replaces but never removes.
 
 Nothing else creates a release. Upstream's CI cut a fresh prerelease and tag on every
 single push; that is deliberately not replicated.

@@ -124,21 +124,37 @@ jobs:
           } >> release-body.md
           echo "--- release body, last lines:"; tail -n 5 release-body.md
 
-      # The loader is the one asset a release cannot go out without, so it is
-      # checked explicitly rather than left to the upload step's globs.
-      - name: Check the release actually has the loader
+      # A release carries exactly one file: the loader, named OPL.ELF, which is
+      # what the PS2 setups this fork is built for boot. The build artifacts keep
+      # the longer names -- a test build has to be traceable to what produced it --
+      # but a release page with three names for one binary only raises the question
+      # of which one to download.
+      - name: The one file the release ships
         run: |
           set -eu
           test -s out/WOPNPS2LD.ELF || { echo "::error::WOPNPS2LD.ELF missing from the build artifacts"; exit 1; }
-          ls out/wOPL-new-ui-*.ZIP >/dev/null 2>&1 || echo "::warning::no packaged .ZIP in the artifacts; releasing the ELF alone"
-          ls -la out
+          cp out/WOPNPS2LD.ELF OPL.ELF
+          ls -la OPL.ELF
+
+      # Re-tagging the same version would otherwise leave the previous run's files
+      # on the release: the upload adds and replaces, it never removes. Anything
+      # already attached that is not OPL.ELF is dropped here, so the release ends
+      # up with what this run actually built and nothing else.
+      - name: Drop assets left over from an earlier run of this tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -eu
+          ids=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$GITHUB_REF_NAME" \
+                  --jq '.assets[] | select(.name != "OPL.ELF") | "\(.id) \(.name)"' 2>/dev/null || true)
+          [ -n "$ids" ] || { echo "nothing to drop"; exit 0; }
+          echo "$ids" | while read -r id name; do
+            echo "removing stale asset $name ($id)"
+            gh api -X DELETE "repos/$GITHUB_REPOSITORY/releases/assets/$id"
+          done
 
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           body_path: release-body.md
-          fail_on_unmatched_files: false
-          files: |
-            out/WOPNPS2LD.ELF
-            out/wOPL-new-ui-*.ELF
-            out/wOPL-new-ui-*.ZIP
+          files: OPL.ELF

@@ -49,9 +49,8 @@ overlay after copying it.
 
 **What to download**
 
-`WOPNPS2LD.ELF` is the loader — copy it to your PS2 and launch it like any other homebrew
-ELF. `wOPL-new-ui-v1.0.ELF` is the same binary under a name that says which build it is,
-and the `.ZIP` is both of those plus the changelog, credits and licence. This fork ships
-**English only** and publishes no language pack.
+`OPL.ELF` is the whole release — copy it to your PS2 and launch it like any other homebrew
+ELF, or rename it to whatever your setup is configured to boot. This fork ships **English
+only** and publishes no language pack.
 
 **Full changelog:** [every commit up to v1.0](https://github.com/DarthMotzkus/wOPL-new-ui/commits/v1.0) — baseline: upstream [`ce94bd9`](https://github.com/ps2homebrew/wOPL/commit/ce94bd9a2af8d5224d311a088625da112c1cb8aa).
