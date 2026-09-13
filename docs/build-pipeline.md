@@ -17,8 +17,21 @@ overlaid or re-applied at build time.
 
 ## Building locally
 
-The toolchain lives at `/opt/toolchains/ps2dev` and has to be on the environment before
-`make` will find its compilers:
+`./build.sh` is the whole local build: it sets the toolchain environment, cleans, runs
+`make release`, and copies the result into `dist/` under the name this repository uses.
+
+```sh
+./build.sh              # -> dist/wOPL-new-ui-<short sha>-<YYYY-MM-DD>.ELF
+./build.sh --no-clean   # incremental, for iterating on a source change
+```
+
+A clean build takes a couple of minutes; the full output is kept in `build.log`
+(gitignored). The script refuses to start if the toolchain or a required tool is missing,
+warns when the tree is dirty — the short sha in the filename then does not fully describe
+the binary — and does not commit anything: `dist/*.ELF` is tracked, so keeping a build is
+a deliberate step.
+
+By hand, it is the same two commands with the environment in place:
 
 ```sh
 export PS2DEV=/opt/toolchains/ps2dev
@@ -29,9 +42,11 @@ export PATH="$PATH:$PS2DEV/bin:$PS2SDK/bin:$PS2DEV/ee/bin:$PS2DEV/iop/bin:$PS2DE
 make clean release
 ```
 
-Also needed: `make`, `git`, `zip`, and `python3` with PyYAML (`lang_compiler.py` uses it).
+The toolchain lives at `/opt/toolchains/ps2dev`; export `PS2DEV` to build against an
+install somewhere else. Also needed: `make`, `git`, `zip`, and `python3` with PyYAML
+(`lang_compiler.py` uses it).
 
-Two things worth knowing:
+Two things worth knowing, both of which `build.sh` already handles:
 
 - The `release` target's last step builds a `.ZIP`. Without `zip` installed it exits 127
   *after* the ELF is already complete, so gate any automation on the ELF existing rather
@@ -127,9 +142,10 @@ downloads-badge job, which is about their release counters.
 
 ## Builds from the desktop
 
-`dist/` holds the ELFs built locally, named `wOPL-new-ui-<short sha>-<YYYY-MM-DD>.ELF`. The
-upstream `.gitignore` ignores `*.ELF` globally, so `dist/*.ELF` is explicitly un-ignored —
-keep that negation in place or builds will silently stop being tracked.
+`dist/` holds the ELFs built locally, named `wOPL-new-ui-<short sha>-<YYYY-MM-DD>.ELF`,
+which is what `./build.sh` writes. The upstream `.gitignore` ignores `*.ELF` globally, so
+`dist/*.ELF` is explicitly un-ignored — keep that negation in place or builds will silently
+stop being tracked.
 
 `dist/BUILD-LOG.pt-BR.md` is the running log of those builds: what changed in each one and
 what still needs testing on real hardware. It lived outside the repository until the tree

@@ -61,7 +61,11 @@ make clean release
 
 The result is `WOPNPS2LD.ELF`. Copy it to your PS2 and launch it like any other homebrew
 ELF. There is nothing to patch or overlay first: everything this fork changes is already in
-the tree. Details in [`docs/build-pipeline.md`](docs/build-pipeline.md).
+the tree.
+
+`./build.sh` does the same build with the toolchain environment already set, and puts the
+ELF in `dist/` named after the revision and the date. Details in
+[`docs/build-pipeline.md`](docs/build-pipeline.md).
 
 ## Current baseline
 
