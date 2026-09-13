@@ -121,10 +121,6 @@ AUDIO_OBJS =	boot.o cancel.o confirm.o coverflow.o cursor.o message.o transition
 
 MISC_OBJS =	icon_sys_A.o icon_sys_J.o icon_sys_C.o theme_list.o theme_coverflow.o
 
-TRANSLATIONS = Albanian Arabic Bulgarian Cebuano Croatian Czech Danish Dutch Filipino French \
-	German Greek Hungarian Indonesian Italian Japanese Korean Laotian Persian Polish Portuguese \
-	Portuguese_BR Romana Russian Ryukyuan SChinese Spanish Swedish TChinese Turkish Vietnamese
-
 EE_BIN = wopl.elf
 EE_BIN_STRIPPED = wopl_stripped.elf
 EE_BIN_PACKED = WOPNPS2LD.ELF
@@ -132,9 +128,7 @@ EE_VPKD = WOPNPS2LD-$(wOPL_VERSION)
 EE_SRC_DIR = src/
 EE_OBJS_DIR = obj/
 EE_ASM_DIR = asm/
-LNG_SRC_DIR = lng_src/
 LNG_TMPL_DIR = lng_tmpl/
-LNG_DIR = lng/
 PNG_ASSETS_DIR = gfx/
 
 MAPFILE = wopl.map
@@ -250,11 +244,11 @@ EE_LDFLAGS += -fdata-sections -ffunction-sections -Wl,--gc-sections
 
 .SILENT:
 
-.PHONY: all release debug iopcore_debug eesio_debug ingame_debug deci2_debug debug_ppctty iopcore_ppctty_debug ingame_ppctty_debug clean rebuild pc_tools pc_tools_win32 woplversion format format-check ps2sdk-not-setup download_lng download_lwNBD languages
+.PHONY: all release debug iopcore_debug eesio_debug ingame_debug deci2_debug debug_ppctty iopcore_ppctty_debug ingame_ppctty_debug clean rebuild pc_tools pc_tools_win32 woplversion ps2sdk-not-setup download_lwNBD languages
 
 ifdef PS2SDK
 
-all: download_lng download_lwNBD languages
+all: download_lwNBD languages
 	echo "Building Double Unofficial Open PS2 Loader $(wOPL_VERSION)..."
 	echo "-Interface"
 ifneq ($(NOT_PACKED),1)
@@ -263,7 +257,7 @@ else
 	$(MAKE) $(EE_BIN)
 endif
 
-release: download_lng download_lwNBD languages $(EE_VPKD).ZIP
+release: download_lwNBD languages $(EE_VPKD).ZIP
 
 debug:
 	$(MAKE) DEBUG=1 all
@@ -361,7 +355,7 @@ clean:	download_lwNBD
 
 realclean: clean
 	echo "-Language"
-	rm -fr $(LNG_SRC_DIR) $(LNG_DIR)lang_*.lng $(INTERNAL_LANGUAGE_C) $(INTERNAL_LANGUAGE_H)
+	rm -fr lng_src lng/lang_*.lng $(INTERNAL_LANGUAGE_C) $(INTERNAL_LANGUAGE_H)
 
 rebuild: clean all
 
@@ -378,13 +372,6 @@ pc_tools:
 pc_tools_win32:
 	echo "Building WIN32 iso2opl, opl2iso and genvmc..."
 	$(MAKE) _WIN32=1 -C pc
-
-cfla = "thirdparty/clang-format-lint-action"
-format-check: download_cfla
-	@python3 $(cfla)/run-clang-format.py --clang-format-executable $(cfla)/clang-format/clang-format12 -r .
-
-format: download_cfla
-	@python3 $(cfla)/run-clang-format.py --clang-format-executable $(cfla)/clang-format/clang-format12 -r . -i true
 
 $(EE_ASM_DIR):
 	@mkdir -p $@
@@ -845,37 +832,16 @@ $(PNG_ASSETS:%=$(EE_ASM_DIR)%_png.c): $(EE_ASM_DIR)%_png.c: $(PNG_ASSETS_DIR)%.p
 
 endif
 
-TRANSLATIONS_LNG = $(TRANSLATIONS:%=$(LNG_DIR)lang_%.lng)
-TRANSLATIONS_YML = $(TRANSLATIONS:%=$(LNG_SRC_DIR)%.yml)
-ENGLISH_TEMPLATE_YML = $(LNG_SRC_DIR)English.yml
-ENGLISH_LNG = $(LNG_SRC_DIR)lang_English.lng
 BASE_LANGUAGE = $(LNG_TMPL_DIR)_base.yml
 INTERNAL_LANGUAGE_C = src/lang_internal.c
 INTERNAL_LANGUAGE_H = include/lang_autogen.h
 LANG_COMPILER = lang_compiler.py
 
-languages: $(ENGLISH_TEMPLATE_YML) $(TRANSLATIONS_YML) $(ENGLISH_LNG) $(TRANSLATIONS_LNG) $(INTERNAL_LANGUAGE_C) $(INTERNAL_LANGUAGE_H)
-
-download_lng:
-	sh download_lng.sh
+# English only: the text compiled into the ELF, generated from lng_tmpl/_base.yml.
+languages: $(INTERNAL_LANGUAGE_C) $(INTERNAL_LANGUAGE_H)
 
 download_lwNBD:
 	sh download_lwNBD.sh
-
-download_cfla:
-	sh download_cfla.sh
-
-$(TRANSLATIONS_LNG): $(LNG_DIR)lang_%.lng: $(LNG_SRC_DIR)%.yml $(BASE_LANGUAGE) $(LANG_COMPILER)
-	python3 $(LANG_COMPILER) --make_lng --base $(BASE_LANGUAGE) --translation $< $@
-
-$(TRANSLATIONS_YML): %.yml: $(BASE_LANGUAGE) $(LANG_COMPILER)
-	python3 $(LANG_COMPILER) --update_translation_yml --base $(BASE_LANGUAGE) --translation $@
-
-$(ENGLISH_TEMPLATE_YML): $(BASE_LANGUAGE) $(LANG_COMPILER)
-	python3 $(LANG_COMPILER) --make_template_yml --base $< $@
-
-$(ENGLISH_LNG): $(ENGLISH_TEMPLATE_YML) $(BASE_LANGUAGE) $(LANG_COMPILER)
-	python3 $(LANG_COMPILER) --make_lng --base $(BASE_LANGUAGE) --translation $< $@
 
 $(INTERNAL_LANGUAGE_C): $(BASE_LANGUAGE) $(LANG_COMPILER)
 	python3 $(LANG_COMPILER) --make_source --base $< $@

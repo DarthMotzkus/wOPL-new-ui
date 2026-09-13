@@ -33,8 +33,6 @@ DETAILED_CHANGELOG
 !.ci
 !.vscode
 !.editorconfig
-!.clang-format
-!.clang-format-ignore
 !modules/debug/*.irx
 
 #
@@ -48,11 +46,8 @@ asm/*.c
 # 3rd party
 #
 *modules/network/lwNBD
-*thirdparty/clang-format-lint-action
 
 # language
-lng/lang_*.lng
-*lng_src
 src/lang_internal.c
 include/lang_autogen.h
 tmp/

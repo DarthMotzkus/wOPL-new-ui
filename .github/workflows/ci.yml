@@ -78,9 +78,10 @@ jobs:
           cp DETAILED_CHANGELOG out/ 2>/dev/null || true
           ls -la out
 
-      # No language pack: this fork ships English only. The loader's own English
-      # text is generated from lng_tmpl/_base.yml, which lives in this repository,
-      # so nothing here depends on the upstream translations repo for the UI.
+      # No language pack: this fork ships English only, and since the translations
+      # clone was cut from the Makefile the build no longer touches the upstream
+      # language repo at all. The loader's own English text is generated from
+      # lng_tmpl/_base.yml, which lives in this repository.
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
         with:
