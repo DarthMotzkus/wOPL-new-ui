@@ -1,8 +1,11 @@
+<div align="center"> 
+  
 # wOPL-new-ui
 
-A personal build of **wOPL** for the PlayStation 2, with a reworked interface and a few
-behaviour fixes. This repository is a fork of
-[ps2homebrew/wOPL](https://github.com/ps2homebrew/wOPL).
+A personal build of **wOPL** for the PlayStation 2, with a reworked interface, focused on 4:3 aspect ratio usage, and a few
+behaviour fixes.
+
+</div>
 
 ## What wOPL is
 
