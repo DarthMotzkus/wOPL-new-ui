@@ -1300,7 +1300,7 @@ static void guiDrawBootVersion(int alpha)
     int x;
     int y;
 
-    snprintf(version, sizeof(version), "wOPL %s", WOPL_VERSION);
+    snprintf(version, sizeof(version), "wOPL-new-ui %s", WOPL_VERSION);
 
     font = guiGetBootTextFont();
 

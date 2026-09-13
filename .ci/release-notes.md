@@ -28,6 +28,8 @@ overlay after copying it.
   background picture stays where it belongs, behind the games list.
 * **Reworked list and coverflow layouts.** Repositioned list, covers, disc icon and menu
   icon, reflections off, and the game id shown next to the cover in list view.
+* **The boot screen says which build it is.** The version line in the corner reads
+  `wOPL-new-ui v1.0` rather than `wOPL v1.0` — the version is this fork's, not upstream's.
 
 **Behaviour**
 

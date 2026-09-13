@@ -32,6 +32,8 @@ Baseline: upstream `ce94bd9`. Release notes: [v1.0](https://github.com/DarthMotz
 - Reworked list and coverflow layouts: repositioned list, covers, disc icon and menu icon,
   reflections off, and the game id shown next to the cover in list view.
   [07](docs/changes/07-theme-layout.md)
+- The version line on the boot screen reads `wOPL-new-ui <version>`, so a photo of a booting
+  console says which build it is. [08](docs/changes/08-boot-version-name.md)
 
 ### Behaviour
 

@@ -27,6 +27,8 @@ go upstream. This fork exists to keep one specific build reproducible, not to re
   plasma; the background image stays where it belongs, behind the games list.
 - Reworked list and coverflow layouts: repositioned list, covers, disc icon and menu icon,
   reflections turned off, and the game id shown next to the cover in list view.
+- The boot screen's version line reads `wOPL-new-ui <version>`, naming the fork rather than
+  upstream.
 
 **Behaviour**
 

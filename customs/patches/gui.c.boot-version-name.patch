@@ -1,0 +1,13 @@
+diff --git a/src/gui.c b/src/gui.c
+index 8ee01e8..76e9277 100644
+--- a/src/gui.c
++++ b/src/gui.c
+@@ -1300,7 +1300,7 @@ static void guiDrawBootVersion(int alpha)
+     int x;
+     int y;
+ 
+-    snprintf(version, sizeof(version), "wOPL %s", WOPL_VERSION);
++    snprintf(version, sizeof(version), "wOPL-new-ui %s", WOPL_VERSION);
+ 
+     font = guiGetBootTextFont();
+ 
