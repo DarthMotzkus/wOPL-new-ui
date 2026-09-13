@@ -171,16 +171,13 @@ that stays in the history forever.
 The two ELFs that were tracked before this rule are still reachable in the history, under
 `dist/` at `2f790da^`.
 
-[`BUILD-LOG.pt-BR.md`](BUILD-LOG.pt-BR.md), here in `docs/`, is the running log of those
-builds: what changed in each one and what still needs testing on real hardware. It moved
-out of `dist/` when that directory stopped being tracked — the log is the one part of it
-worth keeping in the repository. It lived outside the repository until the tree
-became the fork, which made it the one artefact with no backup anywhere; it is versioned
-here now. It is written in Portuguese — see the note at the top of the file.
-
-Write an entry there for a build worth remembering — a milestone, or one handed to someone
-to test. The binary itself stays on the machine that built it; if someone else needs it,
-the release page is where it comes from.
+`dist/BUILD-LOG.pt-BR.md` is the running log of those builds — what changed in each one and
+what still needs testing on real hardware — and it is local too, written in Portuguese and
+never committed. Write an entry there for a build worth remembering: a milestone, or one
+handed to someone to test. It exists only on the machine that wrote it, so back it up with
+whatever backs up that machine; the repository is deliberately not that backup. The binary
+stays local the same way — if someone else needs a build, the release page is where it
+comes from.
 
 ## Upstream
 

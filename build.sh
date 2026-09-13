@@ -89,4 +89,4 @@ git diff --quiet \
 printf '\n%s\n  version %s\n  %s bytes, built in %ds\n' \
     "$out" "$(make -s woplversion | tr -d '\r' | tail -n 1)" \
     "$(stat -c %s "$out")" "$((SECONDS - started))"
-echo "  dist/ is local only and never committed; the log of builds worth keeping is docs/BUILD-LOG.pt-BR.md"
+echo "  dist/ is local only and never committed -- log a build worth keeping in dist/BUILD-LOG.pt-BR.md"
