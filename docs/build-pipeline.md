@@ -171,13 +171,14 @@ that stays in the history forever.
 The two ELFs that were tracked before this rule are still reachable in the history, under
 `dist/` at `2f790da^`.
 
-`dist/BUILD-LOG.pt-BR.md` is the running log of those builds — what changed in each one and
-what still needs testing on real hardware — and it is local too, written in Portuguese and
-never committed. Write an entry there for a build worth remembering: a milestone, or one
-handed to someone to test. It exists only on the machine that wrote it, so back it up with
-whatever backs up that machine; the repository is deliberately not that backup. The binary
-stays local the same way — if someone else needs a build, the release page is where it
-comes from.
+A build worth remembering gets an entry in [`CHANGELOG.md`](../CHANGELOG.md) — a
+milestone, a behaviour change, something handed to someone to test. That file replaced the
+Portuguese build log this fork kept while the customizations lived outside the repository;
+the log's entries are condensed into it, and the original is in the history at
+`git show 851e1c8^:docs/BUILD-LOG.pt-BR.md`.
+
+The binaries stay local: if someone else needs a build, the release page is where it comes
+from.
 
 ## Upstream
 

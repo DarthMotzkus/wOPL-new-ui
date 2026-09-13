@@ -52,11 +52,15 @@ command -v zip > /dev/null \
 LOG=build.log
 : > "$LOG"
 started=$SECONDS
+start_epoch=$(date +%s)
 
 if [ "$no_clean" -eq 0 ]; then
     echo "==> make clean"
     make clean 2>&1 | tee -a "$LOG"
-    # make clean leaves these behind; a stale one would survive into the next build.
+    # make clean only removes the ELF and .ZIP named after the version being built right
+    # now, so every build of another revision leaves its pair behind in the root.
+    rm -f WOPNPS2LD-*.ELF WOPNPS2LD-*.ZIP
+    # And it leaves these behind; a stale one would survive into the next build.
     find modules -name '*.notiopmod.elf' -delete
 fi
 
@@ -66,11 +70,14 @@ make release 2>&1 | tee -a "$LOG"
 make_status=${PIPESTATUS[0]}
 set -e
 
-# The release target's last step packages a .ZIP, which can fail long after the ELF
-# is finished, so what decides success here is the ELF existing -- not make's status.
-elf=$(find . -maxdepth 1 -name 'WOPNPS2LD-*.ELF' -printf '%f\n' | head -n 1)
+# The release target's last step packages a .ZIP, which can fail long after the ELF is
+# finished, so what decides success here is a *fresh* ELF existing -- not make's status.
+# Fresh is the point: the root can hold ELFs from earlier revisions, and copying one of
+# those into dist/ would file someone else's binary under this revision's name.
+elf=$(find . -maxdepth 1 -name 'WOPNPS2LD-*.ELF' -newermt "@$start_epoch" -printf '%T@ %f\n' \
+    | sort -rn | head -n 1 | cut -d' ' -f2-)
 if [ -z "$elf" ]; then
-    die "the build produced no WOPNPS2LD-*.ELF (make exited $make_status) -- see $LOG"
+    die "the build produced no new WOPNPS2LD-*.ELF (make exited $make_status) -- see $LOG"
 fi
 if [ "$make_status" -ne 0 ]; then
     echo "build.sh: make exited $make_status, but $elf is complete." \
@@ -89,4 +96,4 @@ git diff --quiet \
 printf '\n%s\n  version %s\n  %s bytes, built in %ds\n' \
     "$out" "$(make -s woplversion | tr -d '\r' | tail -n 1)" \
     "$(stat -c %s "$out")" "$((SECONDS - started))"
-echo "  dist/ is local only and never committed -- log a build worth keeping in dist/BUILD-LOG.pt-BR.md"
+echo "  dist/ is local only and never committed -- a build worth keeping gets an entry in CHANGELOG.md"
