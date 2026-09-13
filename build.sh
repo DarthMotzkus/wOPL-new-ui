@@ -90,6 +90,12 @@ mkdir -p dist
 [ -e "$out" ] && echo "build.sh: replacing $out"
 cp -f "$elf" "$out"
 
+# Everything the build wrote to the repository root is either a copy of what just landed
+# in dist/ or an intermediate (the unstripped ELF, the linker map). The Makefile has no
+# output directory of its own and upstream edits it constantly, so the tidying happens
+# here rather than as a divergence there.
+rm -f WOPNPS2LD-*.ELF WOPNPS2LD-*.ZIP WOPNPS2LD.ELF wopl.elf wopl_stripped.elf wopl.map
+
 git diff --quiet \
     || echo "build.sh: the tree has uncommitted changes, so $sha does not fully describe this binary"
 
